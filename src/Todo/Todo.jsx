@@ -1,19 +1,83 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { Container, Row, Col, Input, Button, Table } from 'reactstrap';
-import Axios from 'axios';
+import { MdAdd, MdSearch, MdDone, MdDelete, MdClose } from 'react-icons/md';
 
+import Axios from 'axios';
 export default (props)=> {
   
-const [description, setDescription] = useState("");
+const [description, setDescription] = useState([]);
+const [inSearch, setInSearch] = useState(false);
+const apiUrl = "http://127.0.0.1:8000/api/tasks";
 
- function getDescription(){
-  Axios.get("http://127.0.0.1:8000/api/tasks")
-    .then(resolve => {
-      setDescription(resolve.data);
-    })
+useEffect(() => {
+  getData();
+}, []);
+
+
+function searchTask(text){
+  if(inSearch){
+    setInSearch(false)
+  } else {
+    if(text){
+        Axios.get(apiUrl + "/" + text)
+        .then(response => {
+          setInSearch(true);
+          setDescription(response.data);
+        })
+        .catch(reject => {
+        console.error("Erro", reject);
+      })
+    }
   }
-  
-document.onload = getDescription();
+}
+
+function getTaskData(){
+  return {
+      description: document.getElementById("taskTxt").value,
+      done: false
+    }
+}
+
+function deleteTask(id){
+  Axios.delete(apiUrl + "/" + id).then(response => {
+    console.warn("Tarefa de id " + id + " deletada com sucesso!");
+    getData();
+  }).catch(reject => {
+    console.error("Erro", reject);
+  })
+    
+}
+
+function toggleCompleteTask(item){
+  item.done = (item.done) ? false : true
+  Axios.put(apiUrl + "/" + item.id, item)
+    .then(response => {
+      console.info("Tarefa concluída com sucesso!");
+      getData();
+    })
+    .catch(reject => {
+      console.error("Erro", reject);
+    })
+}
+
+function newTask(){
+  Axios.post(apiUrl, getTaskData()).then(response => {
+    console.info("Tarefa Cadastrada com sucesso!");
+    getData();
+    document.getElementById("taskTxt").value = "";
+  }).catch(reject => {
+    console.error("Erro", reject);
+  })
+}
+
+
+function getData(){
+  Axios.get(apiUrl)
+  .then(response => {
+    setDescription(response.data);
+  });
+}
+
 
 return (
   <div>
@@ -26,15 +90,12 @@ return (
         </Col>
       </Row>
       <Row>
-        <Col xs="9">
-          <Input xs="9" type="text" placeholder="Add your task here..." name="taskTxt" id="taskTxt"/>
+        <Col xs="10">
+          <Input type="text" placeholder="Add your task here..." name="taskTxt" id="taskTxt"/>
         </Col>
-        <Col xs="3">
-          <Button className="btnAdd" color="info" >
-            Add
-          </Button>
-          <Button className="ml-left" outline color="secoundary" >
-            Search
+        <Col xs="2">
+          <Button className="btnAdd" onClick={newTask} color="info" >
+            <MdAdd/>
           </Button>
         </Col>
       </Row>
@@ -50,13 +111,24 @@ return (
             </th>
           </tr>
         </thead>
-
         <tbody id="tbody">
-          {description}
+          {description.map(item => (
+            <tr key={item.id}>
+              <td>{(item.done) ? <del>{item.description}</del> : item.description}</td> 
+              <td className="text-right">
+                <Button className="mr-1" onClick={(e) => toggleCompleteTask(item)} color={( item.done ) ? "warning" : "success" }>
+                  {(item.done) ? <MdClose/> : <MdDone/>}
+                </Button>  
+                <Button color="danger" onClick={(e) => deleteTask(item.id)}>
+                  <MdDelete/>
+                </Button>
+              </td> 
+            </tr>
+          ))}
         </tbody>
       </Table>
       </main>
     </Container>
   </div>
-);
+  );
 }

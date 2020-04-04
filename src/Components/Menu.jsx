@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem, NavLink } from 'reactstrap';
+import { MdToday } from 'react-icons/md';
 
 export default (props) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -10,7 +11,7 @@ export default (props) => {
         <Container>
                 <Navbar color="dark" dark expand="md">
                 <NavbarToggler onClick={toggle}/>
-                <NavbarBrand href="/todo">ToDo App</NavbarBrand>
+                <NavbarBrand href="/todo"><MdToday className="mr-2" size="32"/>ToDo App</NavbarBrand>
                 <Collapse isOpen={!isOpen} navbar>
                 <Nav className="mr-auto" navbar>
 
