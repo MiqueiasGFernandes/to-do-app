@@ -13,24 +13,6 @@ useEffect(() => {
   getData();
 }, []);
 
-
-function searchTask(text){
-  if(inSearch){
-    setInSearch(false)
-  } else {
-    if(text){
-        Axios.get(apiUrl + "/" + text)
-        .then(response => {
-          setInSearch(true);
-          setDescription(response.data);
-        })
-        .catch(reject => {
-        console.error("Erro", reject);
-      })
-    }
-  }
-}
-
 function getTaskData(){
   return {
       description: document.getElementById("taskTxt").value,
@@ -62,7 +44,7 @@ function toggleCompleteTask(item){
 
 function newTask(){
   Axios.post(apiUrl, getTaskData()).then(response => {
-    console.info("Tarefa Cadastrada com sucesso!");
+    console.info(getTaskData());
     getData();
     document.getElementById("taskTxt").value = "";
   }).catch(reject => {
